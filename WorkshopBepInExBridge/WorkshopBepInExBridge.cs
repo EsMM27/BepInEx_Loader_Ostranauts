@@ -106,6 +106,7 @@ namespace OstranautsWorkshopBepInExBridge
 			}
 
 			HashSet<string> currentDestinations = new HashSet<string>(specs.Select(s => s.DestinationRelative), StringComparer.OrdinalIgnoreCase);
+			List<ManifestEntry> preservedOrphans = new List<ManifestEntry>();
 			if (_removeOrphanedFiles.Value)
 			{
 				foreach (ManifestEntry entry in previousEntries)
@@ -114,10 +115,14 @@ namespace OstranautsWorkshopBepInExBridge
 					{
 						result.Removed++;
 					}
+					else if (!currentDestinations.Contains(entry.DestinationRelative))
+					{
+						preservedOrphans.Add(entry);
+					}
 				}
 			}
 
-			List<ManifestEntry> nextManifest = new List<ManifestEntry>();
+			List<ManifestEntry> nextManifest = new List<ManifestEntry>(preservedOrphans);
 			HashSet<string> plannedDestinations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 			foreach (CopySpec spec in specs.OrderBy(s => s.WorkshopId, StringComparer.OrdinalIgnoreCase).ThenBy(s => s.DestinationRelative, StringComparer.OrdinalIgnoreCase))
 			{
@@ -335,7 +340,9 @@ namespace OstranautsWorkshopBepInExBridge
 		{
 			string fileName = Path.GetFileName(sourceFile);
 			string assemblyName = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
-			return string.Equals(fileName, assemblyName, StringComparison.OrdinalIgnoreCase);
+			return string.Equals(fileName, assemblyName, StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(fileName, "OstranautsWorkshopBepInExBridge.dll", StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(fileName, "OstranautsWorkshopBepInExBridge.Preloader.dll", StringComparison.OrdinalIgnoreCase);
 		}
 
 		private bool CanWriteDestination(CopySpec spec, ManifestEntry previous, bool wasManaged)
@@ -373,6 +380,12 @@ namespace OstranautsWorkshopBepInExBridge
 				return false;
 			}
 
+			if (IsExecutablePayload(entry.DestinationRelative))
+			{
+				Logger.LogWarning("Kept orphaned executable payload until preloader cleanup: " + entry.DestinationRelative);
+				return false;
+			}
+
 			FileInfo fileInfo = new FileInfo(destination);
 			if (fileInfo.Length != entry.Length || fileInfo.LastWriteTimeUtc.Ticks != entry.LastWriteTicksUtc)
 			{
@@ -382,6 +395,12 @@ namespace OstranautsWorkshopBepInExBridge
 
 			File.Delete(destination);
 			return true;
+		}
+
+		private static bool IsExecutablePayload(string destinationRelative)
+		{
+			string normalized = NormalizeSlashes(destinationRelative).TrimStart('/');
+			return normalized.StartsWith("plugins/Workshop/", StringComparison.OrdinalIgnoreCase) || normalized.StartsWith("patchers/Workshop/", StringComparison.OrdinalIgnoreCase);
 		}
 
 		private IEnumerable<string> GetWorkshopRoots()

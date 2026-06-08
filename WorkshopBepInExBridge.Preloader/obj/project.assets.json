@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\Repos\\BepInEx_Loader_Ostranauts\\WorkshopBepInExBridge.Preloader\\WorkshopBepInExBridge.Preloader.csproj",
+      "projectUniqueName": "e:\\Repos\\ostranauts\\WorkshopBepInExBridge.Preloader\\WorkshopBepInExBridge.Preloader.csproj",
       "projectName": "OstranautsWorkshopBepInExBridge.Preloader",
-      "projectPath": "E:\\Repos\\BepInEx_Loader_Ostranauts\\WorkshopBepInExBridge.Preloader\\WorkshopBepInExBridge.Preloader.csproj",
+      "projectPath": "e:\\Repos\\ostranauts\\WorkshopBepInExBridge.Preloader\\WorkshopBepInExBridge.Preloader.csproj",
       "packagesPath": "C:\\Users\\edgar\\.nuget\\packages\\",
-      "outputPath": "E:\\Repos\\BepInEx_Loader_Ostranauts\\WorkshopBepInExBridge.Preloader\\obj\\",
+      "outputPath": "e:\\Repos\\ostranauts\\WorkshopBepInExBridge.Preloader\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

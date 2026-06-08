@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "KpvnH/QM+Sc=",
+  "dgSpecHash": "cvuXdquf4yc=",
   "success": true,
-  "projectFilePath": "E:\\Repos\\BepInEx_Loader_Ostranauts\\WorkshopBepInExBridge.Preloader\\WorkshopBepInExBridge.Preloader.csproj",
+  "projectFilePath": "E:\\Repos\\ostranauts\\WorkshopBepInExBridge.Preloader\\WorkshopBepInExBridge.Preloader.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

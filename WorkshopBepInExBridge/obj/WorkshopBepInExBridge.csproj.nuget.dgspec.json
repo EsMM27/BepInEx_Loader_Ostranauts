@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Repos\\BepInEx_Loader_Ostranauts\\WorkshopBepInExBridge\\WorkshopBepInExBridge.csproj": {}
+    "E:\\Repos\\ostranauts\\WorkshopBepInExBridge\\WorkshopBepInExBridge.csproj": {}
   },
   "projects": {
-    "E:\\Repos\\BepInEx_Loader_Ostranauts\\WorkshopBepInExBridge\\WorkshopBepInExBridge.csproj": {
+    "E:\\Repos\\ostranauts\\WorkshopBepInExBridge\\WorkshopBepInExBridge.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Repos\\BepInEx_Loader_Ostranauts\\WorkshopBepInExBridge\\WorkshopBepInExBridge.csproj",
+        "projectUniqueName": "E:\\Repos\\ostranauts\\WorkshopBepInExBridge\\WorkshopBepInExBridge.csproj",
         "projectName": "OstranautsWorkshopBepInExBridge",
-        "projectPath": "E:\\Repos\\BepInEx_Loader_Ostranauts\\WorkshopBepInExBridge\\WorkshopBepInExBridge.csproj",
+        "projectPath": "E:\\Repos\\ostranauts\\WorkshopBepInExBridge\\WorkshopBepInExBridge.csproj",
         "packagesPath": "C:\\Users\\edgar\\.nuget\\packages\\",
-        "outputPath": "E:\\Repos\\BepInEx_Loader_Ostranauts\\WorkshopBepInExBridge\\obj\\",
+        "outputPath": "E:\\Repos\\ostranauts\\WorkshopBepInExBridge\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

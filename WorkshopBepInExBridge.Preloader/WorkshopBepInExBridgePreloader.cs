@@ -199,7 +199,9 @@ namespace OstranautsWorkshopBepInExBridge.Preloader
 		{
 			string fileName = Path.GetFileName(sourceFile);
 			string assemblyName = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
-			return string.Equals(fileName, assemblyName, StringComparison.OrdinalIgnoreCase);
+			return string.Equals(fileName, assemblyName, StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(fileName, "OstranautsWorkshopBepInExBridge.dll", StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(fileName, "OstranautsWorkshopBepInExBridge.Preloader.dll", StringComparison.OrdinalIgnoreCase);
 		}
 
 		private static bool CanWriteDestination(BridgeConfig config, CopySpec spec, bool wasManaged)

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OstranautsWorkshopBepInExBridge")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bd86adaec822857b2394aec5e8363ba57f190ff2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cd765852c6e5fdd18d10041a3ff189d8633d68eb")]
 [assembly: System.Reflection.AssemblyProductAttribute("OstranautsWorkshopBepInExBridge")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OstranautsWorkshopBepInExBridge")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
