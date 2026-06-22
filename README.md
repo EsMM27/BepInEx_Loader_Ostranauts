@@ -25,6 +25,8 @@ Ostranauts/
   BepInEx/
     plugins/
       OstranautsWorkshopBepInExBridge.dll
+    patcher/
+      WorkshopBepInExBridgePreloader.dll
 ```
 
 On game startup, the bridge reads Ostranauts' `loading_order.json`, syncs only enabled Workshop paths listed in `aLoadOrder`, then copies:
