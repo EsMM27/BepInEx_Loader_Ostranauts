@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -45,6 +46,13 @@ namespace OstranautsWorkshopBepInExBridge.Preloader
 			_ran = true;
 			try
 			{
+				BridgePaths selfPaths = BridgePaths.FromPreloaderAssembly();
+				BridgeConfig selfConfig = BridgeConfig.Load(Path.Combine(selfPaths.ConfigPath, ConfigFileName));
+				if (TrySelfUpdate(selfPaths, selfConfig))
+				{
+					return; // relaunch + exit already requested; never reached
+				}
+
 				SyncResult result = SyncWorkshopPayloads();
 				Log("scan complete. Mode=" + result.Mode + ", items=" + result.ItemsScanned + ", copied=" + result.Copied + ", skipped=" + result.Skipped + ", removed=" + result.Removed + ".");
 			}
@@ -52,6 +60,120 @@ namespace OstranautsWorkshopBepInExBridge.Preloader
 			{
 				Log("failed: " + ex);
 			}
+		}
+
+		// Replaces the bridge's own installed DLLs when a newer copy arrives in its
+		// Workshop folder, then relaunches the game. Runs in the preloader (before
+		// BepInEx loads the plugin assembly): the plugin DLL isn't locked yet, and
+		// Windows allows renaming this loaded preloader DLL within the same volume.
+		private static bool TrySelfUpdate(BridgePaths paths, BridgeConfig config)
+		{
+			if (!config.SelfUpdate)
+			{
+				return false;
+			}
+
+			string preloaderInstalled = NormalizeFullPath(Assembly.GetExecutingAssembly().Location);
+			string pluginInstalled = NormalizeFullPath(Path.Combine(paths.PluginPath, "OstranautsWorkshopBepInExBridge.dll"));
+
+			// Clear stale *.old from a prior update; they are no longer mapped now.
+			TryDeleteOld(preloaderInstalled);
+			TryDeleteOld(pluginInstalled);
+
+			// Scan all Workshop items regardless of loading_order — the bridge item
+			// is a BepInEx loader and may not appear in the game's mod load order.
+			string preloaderSrc = FindBridgeSource(paths, config, "patchers", "OstranautsWorkshopBepInExBridge.Preloader.dll");
+			string pluginSrc = FindBridgeSource(paths, config, "plugins", "OstranautsWorkshopBepInExBridge.dll");
+
+			bool staged = false;
+			staged |= StageIfNewer(preloaderSrc, preloaderInstalled);
+			staged |= StageIfNewer(pluginSrc, pluginInstalled);
+			if (!staged)
+			{
+				return false;
+			}
+
+			Log("Self-update staged. Relaunching Ostranauts.");
+			RelaunchAndExit(); // does not return
+			return true;
+		}
+
+		private static string FindBridgeSource(BridgePaths paths, BridgeConfig config, string payloadName, string dllName)
+		{
+			string newest = null;
+			DateTime newestTime = DateTime.MinValue;
+			foreach (string itemDir in GetAllWorkshopItemDirs(paths, config))
+			{
+				string candidate = Path.Combine(itemDir, "BepInEx", payloadName, dllName);
+				if (!File.Exists(candidate))
+				{
+					continue;
+				}
+
+				DateTime time = File.GetLastWriteTimeUtc(candidate);
+				if (newest == null || time > newestTime)
+				{
+					newest = NormalizeFullPath(candidate);
+					newestTime = time;
+				}
+			}
+
+			return newest;
+		}
+
+		private static bool StageIfNewer(string source, string installed)
+		{
+			if (source == null || !File.Exists(installed) || FilesAlreadyMatch(source, installed))
+			{
+				return false;
+			}
+
+			// ponytail: size+mtime match is the re-trigger guard (we stamp the mtime
+			// below). If a same-size rebuild keeps an identical mtime it won't update;
+			// if mtime rounding ever flaps, upgrade to a "last applied source ticks"
+			// marker in config/.
+			File.Move(installed, installed + ".old");
+			File.Copy(source, installed);
+			File.SetLastWriteTimeUtc(installed, File.GetLastWriteTimeUtc(source));
+			Log("Updated " + Path.GetFileName(installed) + " from " + source);
+			return true;
+		}
+
+		private static void TryDeleteOld(string path)
+		{
+			string old = path + ".old";
+			if (!File.Exists(old))
+			{
+				return;
+			}
+
+			try
+			{
+				File.Delete(old);
+			}
+			catch (Exception ex)
+			{
+				Log("Could not delete " + old + " (will retry next start): " + ex.Message);
+			}
+		}
+
+		private static void RelaunchAndExit()
+		{
+			// Steam dedups by app-id, so it won't relaunch while this process is alive.
+			// Spawn a detached helper that waits for our PID to exit, then asks Steam to
+			// relaunch. ponytail: relies on Steam being the launcher (it is, for a
+			// Workshop user); add a game-exe fallback only if launching outside Steam is reported.
+			int pid = Process.GetCurrentProcess().Id;
+			ProcessStartInfo psi = new ProcessStartInfo("powershell.exe",
+				"-NoProfile -WindowStyle Hidden -Command \"" +
+				"Wait-Process -Id " + pid + " -ErrorAction SilentlyContinue; " +
+				"Start-Process 'steam://rungameid/" + AppId + "'\"")
+			{
+				UseShellExecute = false,
+				CreateNoWindow = true
+			};
+			Process.Start(psi);
+			Environment.Exit(0);
 		}
 
 		private static SyncResult SyncWorkshopPayloads()
@@ -582,6 +704,7 @@ namespace OstranautsWorkshopBepInExBridge.Preloader
 			public bool SyncPatchers = true;
 			public bool SyncConfig = true;
 			public bool CopyConfigToRoot = true;
+			public bool SelfUpdate = true;
 			public bool OverwriteUnmanagedFiles;
 			public bool RemoveOrphanedManagedFiles = true;
 
@@ -625,6 +748,7 @@ namespace OstranautsWorkshopBepInExBridge.Preloader
 				config.SyncPatchers = GetBool(values, "Sync.SyncPatchers", true);
 				config.SyncConfig = GetBool(values, "Sync.SyncConfig", true);
 				config.CopyConfigToRoot = GetBool(values, "Sync.CopyConfigToRoot", true);
+				config.SelfUpdate = GetBool(values, "Sync.SelfUpdate", true);
 				config.OverwriteUnmanagedFiles = GetBool(values, "Safety.OverwriteUnmanagedFiles", false);
 				config.RemoveOrphanedManagedFiles = GetBool(values, "Safety.RemoveOrphanedManagedFiles", true);
 				return config;
