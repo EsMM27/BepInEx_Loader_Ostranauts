@@ -62,6 +62,12 @@ Ostranauts/BepInEx/config/OstranautsWorkshopBepInExBridge.manifest.tsv
 
 Newly copied plugins and patchers generally require restarting Ostranauts, because BepInEx scans plugins before this bridge plugin runs.
 
+## Self-update
+
+The bridge ships as its own Workshop item. When Steam downloads a newer version, the bridge cannot overwrite its own loaded DLLs in place, so on the next start the preloader uses the `.old` rename trick: it renames each installed bridge DLL (`OstranautsWorkshopBepInExBridge.Preloader.dll` in `patchers/`, `OstranautsWorkshopBepInExBridge.dll` in `plugins/`) to `*.old`, copies the newer copy from the bridge's Workshop folder into place, then relaunches Ostranauts via Steam and exits. The leftover `*.old` files are deleted on the following start.
+
+"Newer" is decided by file size + last-write time. Disable with `Sync.SelfUpdate=false` if you do not want the bridge to auto-restart the game.
+
 ## Safety Defaults
 
 The bridge does not overwrite unmanaged existing files by default. If a destination file already exists and was not created by the bridge, it logs a warning and skips it.
@@ -80,6 +86,7 @@ Useful settings:
 - `Paths.LoadingOrderPathOverride`: manually point at `loading_order.json`.
 - `Sync.FallbackToWorkshopFolderScan`: set `true` to sync all Workshop folders if `loading_order.json` cannot be found. This is off by default so stale unsubscribed folders are not copied.
 - `Sync.CopyConfigToRoot`: set `false` to copy configs under `BepInEx/config/Workshop/<workshop id>/` instead of the config root.
+- `Sync.SelfUpdate`: set `false` to stop the bridge from replacing its own DLLs and auto-restarting Ostranauts when a newer version is downloaded.
 - `Safety.OverwriteUnmanagedFiles`: set `true` only if you want Workshop payloads to replace existing non-bridge-managed files.
 
 ## Build
