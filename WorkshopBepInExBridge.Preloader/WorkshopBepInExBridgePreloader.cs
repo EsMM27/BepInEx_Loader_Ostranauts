@@ -57,6 +57,7 @@ namespace OstranautsWorkshopBepInExBridge.Preloader
 		private static SyncResult SyncWorkshopPayloads()
 		{
 			BridgePaths paths = BridgePaths.FromPreloaderAssembly();
+			RemoveObsoleteRuntimePlugin(paths);
 			BridgeConfig config = BridgeConfig.Load(Path.Combine(paths.ConfigPath, ConfigFileName));
 			string manifestPath = Path.Combine(paths.ConfigPath, ManifestFileName);
 			List<ManifestEntry> previousEntries = LoadManifest(manifestPath);
@@ -159,6 +160,25 @@ namespace OstranautsWorkshopBepInExBridge.Preloader
 			}
 
 			return result;
+		}
+
+		private static void RemoveObsoleteRuntimePlugin(BridgePaths paths)
+		{
+			string obsoletePlugin = Path.Combine(paths.PluginPath, "OstranautsWorkshopBepInExBridge.dll");
+			if (!File.Exists(obsoletePlugin))
+			{
+				return;
+			}
+
+			try
+			{
+				File.Delete(obsoletePlugin);
+				Log("Removed obsolete runtime bridge plugin: plugins/OstranautsWorkshopBepInExBridge.dll");
+			}
+			catch (Exception ex)
+			{
+				Log("Could not remove obsolete runtime bridge plugin: " + ex.Message);
+			}
 		}
 
 		private static void AddPayloadSpecs(List<CopySpec> specs, BridgePaths paths, string workshopId, string sourceBepInEx, string payloadName, string destinationRoot)
