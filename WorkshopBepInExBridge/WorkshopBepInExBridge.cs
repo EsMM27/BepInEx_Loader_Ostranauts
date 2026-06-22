@@ -141,6 +141,18 @@ namespace OstranautsWorkshopBepInExBridge
 					continue;
 				}
 
+				if (IsExecutablePayload(spec.DestinationRelative))
+				{
+					// Preloader owns DLL/patcher lifecycle — it copies before BepInEx loads anything.
+					// Attempting to copy here would fail for already-loaded assemblies (user-mapped section).
+					// If the source changed, the new version will take effect on next restart via the preloader.
+					if (File.Exists(spec.DestinationFull) && !FilesAlreadyMatch(spec.SourceFull, spec.DestinationFull))
+						Logger.LogWarning("Plugin updated, restart required to apply: " + spec.DestinationRelative);
+					nextManifest.Add(ManifestEntry.FromSpec(spec));
+					result.Skipped++;
+					continue;
+				}
+
 				Directory.CreateDirectory(Path.GetDirectoryName(spec.DestinationFull));
 				File.Copy(spec.SourceFull, spec.DestinationFull, true);
 				File.SetLastWriteTimeUtc(spec.DestinationFull, File.GetLastWriteTimeUtc(spec.SourceFull));
