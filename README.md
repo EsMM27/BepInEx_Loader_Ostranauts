@@ -23,8 +23,6 @@ User install:
 ```text
 Ostranauts/
   BepInEx/
-    plugins/
-      OstranautsWorkshopBepInExBridge.dll
     patcher/
       WorkshopBepInExBridgePreloader.dll
 ```
